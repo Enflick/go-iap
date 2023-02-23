@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"reflect"
 	"testing"
@@ -16,8 +15,6 @@ import (
 func TestHandle497Error(t *testing.T) {
 	t.Parallel()
 	var expected, actual error
-	client := New("developerSecret")
-
 	server, client := testTools(
 		497,
 		"{\"message\":\"Purchase token/app user mismatch\",\"status\":false}",
@@ -39,7 +36,6 @@ func TestHandle497Error(t *testing.T) {
 func TestHandle400Error(t *testing.T) {
 	t.Parallel()
 	var expected, actual error
-	client := New("developerSecret")
 
 	server, client := testTools(
 		400,
@@ -115,21 +111,24 @@ func TestVerifySubscription(t *testing.T) {
 	t.Parallel()
 	server, client := testTools(
 		200,
-		"{\"purchaseDate\":1558424877035,\"receiptId\":\"q1YqVrJSSs7P1UvMTazKz9PLTCwoTswtyEktM9JLrShIzCvOzM-LL04tiTdW0lFKASo2NDEwMjCwMDM2MTC0AIqVAsUsLd1c4l18jIxdfTOK_N1d8kqLLHVLc8oK83OLgtPNCit9AoJdjJ3dXG2BGkqUrAxrAQ\",\"productId\":\"com.amazon.iapsamplev2.expansion_set_3\",\"parentProductId\":null,\"productType\":\"SUBSCRIPTION\",\"renewalDate\":1561103277035,\"quantity\":1,\"betaProduct\":false,\"testTransaction\":true,\"term\":\"1 Week\",\"termSku\":\"sub1-weekly\"}",
+		"{\"purchaseDate\":1558424877035,\"receiptId\":\"q1YqVrJSSs7P1UvMTazKz9PLTCwoTswtyEktM9JLrShIzCvOzM-LL04tiTdW0lFKASo2NDEwMjCwMDM2MTC0AIqVAsUsLd1c4l18jIxdfTOK_N1d8kqLLHVLc8oK83OLgtPNCit9AoJdjJ3dXG2BGkqUrAxrAQ\",\"productId\":\"com.amazon.iapsamplev2.expansion_set_3\",\"parentProductId\":null,\"productType\":\"SUBSCRIPTION\",\"renewalDate\":1561103277035,\"quantity\":1,\"betaProduct\":false,\"testTransaction\":true,\"term\":\"1 Week\",\"termSku\":\"sub1-weekly\", \"freeTrialEndDate\":1561104377023, \"AutoRenewing\":false, \"GracePeriodEndDate\":1561104377013}",
 	)
 	defer server.Close()
 
 	expected := IAPResponse{
-		ReceiptID:       "q1YqVrJSSs7P1UvMTazKz9PLTCwoTswtyEktM9JLrShIzCvOzM-LL04tiTdW0lFKASo2NDEwMjCwMDM2MTC0AIqVAsUsLd1c4l18jIxdfTOK_N1d8kqLLHVLc8oK83OLgtPNCit9AoJdjJ3dXG2BGkqUrAxrAQ",
-		ProductType:     "SUBSCRIPTION",
-		ProductID:       "com.amazon.iapsamplev2.expansion_set_3",
-		PurchaseDate:    1558424877035,
-		RenewalDate:     1561103277035,
-		CancelDate:      0,
-		TestTransaction: true,
-		Quantity:        1,
-		Term:            "1 Week",
-		TermSku:         "sub1-weekly",
+		ReceiptID:          "q1YqVrJSSs7P1UvMTazKz9PLTCwoTswtyEktM9JLrShIzCvOzM-LL04tiTdW0lFKASo2NDEwMjCwMDM2MTC0AIqVAsUsLd1c4l18jIxdfTOK_N1d8kqLLHVLc8oK83OLgtPNCit9AoJdjJ3dXG2BGkqUrAxrAQ",
+		ProductType:        "SUBSCRIPTION",
+		ProductID:          "com.amazon.iapsamplev2.expansion_set_3",
+		PurchaseDate:       1558424877035,
+		RenewalDate:        1561103277035,
+		CancelDate:         0,
+		TestTransaction:    true,
+		Quantity:           1,
+		Term:               "1 Week",
+		TermSku:            "sub1-weekly",
+		FreeTrialEndDate:   1561104377023,
+		AutoRenewing:       false,
+		GracePeriodEndDate: 1561104377013,
 	}
 
 	actual, _ := client.Verify(
@@ -172,21 +171,16 @@ func TestVerifyEntitled(t *testing.T) {
 
 func TestVerifyTimeout(t *testing.T) {
 	t.Parallel()
-	// HTTP 100 is "continue" so it will time out
-	server, client := testTools(100, "timeout response")
+	server, client := testTools(http.StatusGatewayTimeout, "{\"message\": \"timeout response\"}")
 	defer server.Close()
 
 	ctx := context.Background()
 	_, actual := client.Verify(ctx, "timeout", "timeout")
-
-	// Actual should be a "request canceled" *url.Error
-	urlErr, ok := actual.(*url.Error)
-	if !ok {
-		t.Errorf("Expected *url.Error, got %T", actual)
+	if actual == nil {
+		t.Error("expected error, got nil")
 	}
-
-	if !urlErr.Timeout() {
-		t.Errorf("got %v\nwant timeout", actual)
+	if actual.Error() != "timeout response" {
+		t.Errorf("got %v\nwant %v", actual, "timeout response")
 	}
 }
 
