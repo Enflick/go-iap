@@ -6,7 +6,7 @@ package mocks
 
 import (
 	context "context"
-	appstore "github.com/awa/go-iap/appstore"
+	appstore "github.com/Enflick/go-iap/appstore"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

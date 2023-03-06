@@ -14,14 +14,17 @@ func (n *NumericString) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Environment is alias
 type Environment string
 
+// list of Environment
 const (
 	Sandbox    Environment = "Sandbox"
 	Production Environment = "Production"
 )
 
 type (
+	// IAPRequest is struct
 	// https://developer.apple.com/library/content/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html
 	// The IAPRequest type has the request parameter
 	IAPRequest struct {
@@ -61,6 +64,13 @@ type (
 		OriginalPurchaseDatePST string `json:"original_purchase_date_pst"`
 	}
 
+	// The PreorderDate type indicates the date and time that the pre-order
+	PreorderDate struct {
+		PreorderDate    string `json:"preorder_date"`
+		PreorderDateMS  string `json:"preorder_date_ms"`
+		PreorderDatePST string `json:"preorder_date_pst"`
+	}
+
 	// The ExpiresDate type indicates the expiration date for the subscription
 	ExpiresDate struct {
 		ExpiresDate             string `json:"expires_date,omitempty"`
@@ -84,15 +94,24 @@ type (
 		GracePeriodDatePST string `json:"grace_period_expires_date_pst,omitempty"`
 	}
 
+	// AutoRenewStatusChangeDate type indicates the auto renew status change date
+	AutoRenewStatusChangeDate struct {
+		AutoRenewStatusChangeDate    string `json:"auto_renew_status_change_date"`
+		AutoRenewStatusChangeDateMS  string `json:"auto_renew_status_change_date_ms"`
+		AutoRenewStatusChangeDatePST string `json:"auto_renew_status_change_date_pst"`
+	}
+
 	// The InApp type has the receipt attributes
 	InApp struct {
 		Quantity                    string        `json:"quantity"`
 		ProductID                   string        `json:"product_id"`
-		TransactionID         string        `json:"transaction_id"`
-		OriginalTransactionID NumericString `json:"original_transaction_id,omitempty"`
-		WebOrderLineItemID    string        `json:"web_order_line_item_id,omitempty"`
+		TransactionID               string        `json:"transaction_id"`
+		OriginalTransactionID       NumericString `json:"original_transaction_id,omitempty"`
+		WebOrderLineItemID          string        `json:"web_order_line_item_id,omitempty"`
 		PromotionalOfferID          string        `json:"promotional_offer_id"`
 		SubscriptionGroupIdentifier string        `json:"subscription_group_identifier"`
+		OfferCodeRefName            string        `json:"offer_code_ref_name,omitempty"`
+		AppAccountToken             string        `json:"app_account_token,omitempty"`
 
 		IsTrialPeriod        string `json:"is_trial_period"`
 		IsInIntroOfferPeriod string `json:"is_in_intro_offer_period,omitempty"`
@@ -105,6 +124,8 @@ type (
 
 		CancellationDate
 		CancellationReason string `json:"cancellation_reason,omitempty"`
+
+		InAppOwnershipType string `json:"in_app_ownership_type,omitempty"`
 	}
 
 	// The Receipt type has whole data of receipt
@@ -121,9 +142,12 @@ type (
 		ReceiptCreationDate
 		RequestDate
 		OriginalPurchaseDate
+		PreorderDate
 	}
 
+	// PendingRenewalInfo is struct
 	// A pending renewal may refer to a renewal that is scheduled in the future or a renewal that failed in the past for some reason.
+	// https://developer.apple.com/documentation/appstoreservernotifications/unified_receipt/pending_renewal_info
 	PendingRenewalInfo struct {
 		SubscriptionExpirationIntent   string `json:"expiration_intent"`
 		SubscriptionAutoRenewProductID string `json:"auto_renew_product_id"`
@@ -132,6 +156,9 @@ type (
 		SubscriptionPriceConsentStatus string `json:"price_consent_status"`
 		ProductID                      string `json:"product_id"`
 		OriginalTransactionID          string `json:"original_transaction_id"`
+		OfferCodeRefName               string `json:"offer_code_ref_name,omitempty"`
+		PromotionalOfferID             string `json:"promotional_offer_id,omitempty"`
+		PriceIncreaseStatus            string `json:"price_increase_status,omitempty"`
 
 		GracePeriodDate
 	}
@@ -151,6 +178,7 @@ type (
 		IsRetryable        bool                 `json:"is-retryable,omitempty"`
 	}
 
+	// StatusResponse is struct
 	// The HttpStatusResponse struct contains the status code returned by the store
 	// Used as a workaround to detect when to hit the production appstore or sandbox appstore regardless of receipt type
 	StatusResponse struct {
@@ -171,6 +199,7 @@ type (
 		Status                   int            `json:"status"`
 	}
 
+	// ReceiptForIOS6 is struct
 	ReceiptForIOS6 struct {
 		AppItemID NumericString `json:"app_item_id"`
 		BID       string        `json:"bid"`

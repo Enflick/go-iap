@@ -1,8 +1,11 @@
 package appstore
 
+// NotificationType is type
+// https://developer.apple.com/documentation/appstoreservernotifications/notification_type
 // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Subscriptions.html#//apple_ref/doc/uid/TP40008267-CH7-SW16
 type NotificationType string
 
+// list of NotificationType
 const (
 	// Initial purchase of the subscription.
 	NotificationTypeInitialBuy NotificationType = "INITIAL_BUY"
@@ -27,21 +30,29 @@ const (
 	NotificationTypePriceIncreaseConsent NotificationType = "PRICE_INCREASE_CONSENT"
 	// Customer’s subscription has successfully auto-renewed for a new transaction period.
 	NotificationTypeDidRenew NotificationType = "DID_RENEW"
+	// Customer's in-app purchase through Family Sharing is no longer available through sharing.
+	NotificationTypeDidRevoke NotificationType = "REVOKE"
+	// Indicates that the customer initiated a refund request for a consumable in-app purchase, and the App Store is requesting that you provide consumption data.
+	NotificationTypeConsumptionRequest NotificationType = "CONSUMPTION_REQUEST"
 )
 
+// NotificationEnvironment is type
 type NotificationEnvironment string
 
+// list of NotificationEnvironment
 const (
 	NotificationSandbox    NotificationEnvironment = "Sandbox"
 	NotificationProduction NotificationEnvironment = "PROD"
 )
 
+// NotificationExpiresDate is struct
 type NotificationExpiresDate struct {
 	ExpiresDateMS  string `json:"expires_date"`
 	ExpiresDateUTC string `json:"expires_date_formatted"`
 	ExpiresDatePST string `json:"expires_date_formatted_pst"`
 }
 
+// NotificationReceipt is struct
 type NotificationReceipt struct {
 	UniqueIdentifier          string        `json:"unique_identifier"`
 	AppItemID                 string        `json:"app_item_id"`
@@ -53,9 +64,9 @@ type NotificationReceipt struct {
 	ProductID                 string        `json:"product_id"`
 	BID                       string        `json:"bid"`
 	BVRS                      string        `json:"bvrs"`
-	TransactionID         string        `json:"transaction_id"`
-	OriginalTransactionID NumericString `json:"original_transaction_id,omitempty"`
-	IsTrialPeriod         string        `json:"is_trial_period"`
+	TransactionID             string        `json:"transaction_id"`
+	OriginalTransactionID     NumericString `json:"original_transaction_id,omitempty"`
+	IsTrialPeriod             string        `json:"is_trial_period"`
 	IsInIntroOfferPeriod      string        `json:"is_in_intro_offer_period"`
 
 	PurchaseDate
@@ -64,6 +75,7 @@ type NotificationReceipt struct {
 	CancellationDate
 }
 
+// NotificationUnifiedReceipt is struct
 type NotificationUnifiedReceipt struct {
 	Status             int                  `json:"status"`
 	Environment        Environment          `json:"environment"`
@@ -72,6 +84,8 @@ type NotificationUnifiedReceipt struct {
 	PendingRenewalInfo []PendingRenewalInfo `json:"pending_renewal_info,omitempty"`
 }
 
+// SubscriptionNotification is struct for
+// https://developer.apple.com/documentation/appstoreservernotifications/responsebodyv1
 type SubscriptionNotification struct {
 	Environment      NotificationEnvironment `json:"environment"`
 	NotificationType NotificationType        `json:"notification_type"`
@@ -87,11 +101,12 @@ type SubscriptionNotification struct {
 
 	// This is the same as the Subscription Expiration Intent in the receipt.
 	// Posted only if notification_type is RENEWAL or INTERACTIVE_RENEWAL.
-	ExpirationIntent string `json:"expiration_intent"`
+	ExpirationIntent int `json:"expiration_intent"`
 
 	// Auto renew info
 	AutoRenewStatus    string `json:"auto_renew_status"` // false or true
 	AutoRenewProductID string `json:"auto_renew_product_id"`
+	AutoRenewStatusChangeDate
 
 	// Posted if the notification_type is RENEWAL or INTERACTIVE_RENEWAL, and only if the renewal is successful.
 	// Posted also if the notification_type is INITIAL_BUY.
@@ -109,6 +124,11 @@ type SubscriptionNotification struct {
 	LatestExpiredReceipt string `json:"latest_expired_receipt"`
 	// Deprecated: see details: https://developer.apple.com/documentation/appstoreservernotifications/ .
 	LatestExpiredReceiptInfo NotificationReceipt `json:"latest_expired_receipt_info"`
+
+	// BID is the app bundle ID
+	BID string `json:"bid,omitempty"`
+	// BVRS is the app bundle version
+	BVRS string `json:"bvrs,omitempty"`
 
 	// Posted only if the notification_type is CANCEL.
 	CancellationDate
