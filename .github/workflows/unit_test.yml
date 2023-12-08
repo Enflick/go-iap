@@ -8,7 +8,7 @@ on:
 name: unit test
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: textnow
     strategy:
       matrix:
         go: [ '1.18', '1.19' ]
@@ -19,5 +19,9 @@ jobs:
         uses: actions/setup-go@v1
         with:
           go-version: ${{ matrix.go }}
+      - name: Install Dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y build-essential
       - name: test
         run: go test -v -race ./...
